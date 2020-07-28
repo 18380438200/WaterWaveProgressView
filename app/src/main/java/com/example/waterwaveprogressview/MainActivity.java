@@ -9,5 +9,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        WaveProgressView waveProgressView = findViewById(R.id.waveview);
+        waveProgressView.setProgressAnim(100, 2000);
+
     }
 }

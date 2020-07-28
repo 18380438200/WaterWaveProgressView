@@ -119,6 +119,7 @@ public class WaterWaveProgressView extends View {
      * 绘制波浪
      */
     private void drawWave(Canvas canvas) {
+        wavePath.reset();
 
         wavePath.moveTo(padding, getHeight() / 2);
         wavePath.quadTo(getWidth() / 4, getHeight() / 2 - waveRadius, getWidth() / 2, getHeight() / 2);

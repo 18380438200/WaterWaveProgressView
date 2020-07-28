@@ -7,10 +7,11 @@
     android:background="@color/green"
     tools:context=".MainActivity">
 
-    <com.example.waterwaveprogressview.WaterWaveProgressView
+    <com.example.waterwaveprogressview.WaveProgressView
+        android:id="@+id/waveview"
         android:layout_width="250dp"
-        android:layout_height="250dp"
-        android:layout_marginTop="50dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
         android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>
