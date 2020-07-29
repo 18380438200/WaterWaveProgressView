@@ -32,7 +32,9 @@ public class WaveProgressView extends View {
      * 圆环paint
      */
     private Paint circlePaint;
-    /** 圆环paint */
+    /**
+     * 圆环paint
+     */
     private Paint ringPaint;
     /**
      * 文本paint
@@ -40,23 +42,40 @@ public class WaveProgressView extends View {
     private Paint textPaint;
     private Path wavePath;
     private int waveWidth;
-    /** 波浪幅度 */
+    /**
+     * 波浪幅度
+     */
     private float waveHeight;
-    /** 水面波浪数，在为偶数的情况下，波浪才会按周期平移 */
+    /**
+     * 水面波浪数，在为偶数的情况下，波浪才会按周期平移
+     */
     private final int waveCount = 2;
-    /** 当前数值 */
+    /**
+     * 当前数值
+     */
     private int curNum;
-    /** 总数值 */
+    /**
+     * 总数值
+     */
     private int totalNum;
-    /** 最终进度比例 */
+    /**
+     * 最终进度比例
+     */
     private float percent;
-    /** 当前轮水波移动比例 */
+    /**
+     * 当前轮水波移动比例
+     */
     private int movePercent;
-    /** 该view尺寸大小 */
+    /**
+     * 该view尺寸大小
+     */
     private int rectSize;
+    /** 动画时长 */
     private final int ANIM_DURATION = 2000;
     private float moveDistance;
-    /** 缓存bitmap */
+    /**
+     * 缓存bitmap
+     */
     private Bitmap bitmap;
     private Canvas bitmapCanvas;
     private int ringWidth;
@@ -106,7 +125,7 @@ public class WaveProgressView extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        waveWidth = getMeasuredWidth()/waveCount;
+        waveWidth = getMeasuredWidth() / waveCount;
         waveHeight = dp2px(getContext(), 18);
         rectSize = getMeasuredWidth();
         moveDistance = rectSize;
@@ -120,7 +139,8 @@ public class WaveProgressView extends View {
 
         drawBitmap(canvas);
 
-        RectF rectF = new RectF(ringWidth/2, ringWidth/2, rectSize-ringWidth/2, rectSize-ringWidth/2);
+        //绘制外圆环
+        RectF rectF = new RectF(ringWidth / 2, ringWidth / 2, rectSize - ringWidth / 2, rectSize - ringWidth / 2);
         canvas.drawArc(rectF, 0, 360, false, ringPaint);
 
         drawContentText(canvas);
@@ -129,12 +149,12 @@ public class WaveProgressView extends View {
     private Path setWavePath() {
         wavePath.reset();
 
-        wavePath.moveTo(-moveDistance, rectSize*(1-percent));  //起始点，y值为水流的高度
+        wavePath.moveTo(-moveDistance, rectSize * (1 - percent));  //起始点，y值为水流的高度
 
         //绘制多段波浪
-        for (int i=0;i<waveCount*2;i++) {
-            wavePath.rQuadTo(waveWidth/2, waveHeight, waveWidth, 0);
-            wavePath.rQuadTo(waveWidth/2, -waveHeight, waveWidth, 0);
+        for (int i = 0; i < waveCount * 2; i++) {
+            wavePath.rQuadTo(waveWidth / 2, waveHeight, waveWidth, 0);
+            wavePath.rQuadTo(waveWidth / 2, -waveHeight, waveWidth, 0);
         }
 
         wavePath.lineTo(rectSize, rectSize);
@@ -150,7 +170,7 @@ public class WaveProgressView extends View {
     private void drawBitmap(Canvas canvas) {
         bitmap = Bitmap.createBitmap(rectSize, rectSize, Bitmap.Config.ARGB_8888);
         bitmapCanvas = new Canvas(bitmap);
-        bitmapCanvas.drawCircle(rectSize/2, rectSize/2, rectSize/2-ringWidth, circlePaint);
+        bitmapCanvas.drawCircle(rectSize / 2, rectSize / 2, rectSize / 2 - ringWidth, circlePaint);
         bitmapCanvas.drawPath(setWavePath(), wavePaint);
 
         canvas.drawBitmap(bitmap, 0, 0, null);
@@ -158,6 +178,7 @@ public class WaveProgressView extends View {
 
     /**
      * 设置当前值和总值，并开启动画
+     *
      * @param curNum
      * @param totalNum
      */
@@ -181,7 +202,7 @@ public class WaveProgressView extends View {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 curNum = (int) animation.getAnimatedValue();
-                percent = (float) curNum/totalNum;  //实时更新进度状态
+                percent = (float) curNum / totalNum;  //实时更新进度状态
             }
         });
         valueAnimator.start();
@@ -200,7 +221,7 @@ public class WaveProgressView extends View {
             public void onAnimationUpdate(ValueAnimator animation) {
                 movePercent = (int) animation.getAnimatedValue();
 
-                moveDistance = (float)movePercent/100*rectSize;
+                moveDistance = (float) movePercent / 100 * rectSize;
 
                 postInvalidate();
             }
@@ -215,7 +236,7 @@ public class WaveProgressView extends View {
      */
     public void runWithAnimation(int number) {
         ObjectAnimator objectAnimator = ObjectAnimator.ofInt(this, "num", 0, number);
-        objectAnimator.setDuration(1000);
+        objectAnimator.setDuration(ANIM_DURATION/2);
         objectAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
         objectAnimator.start();
 
@@ -246,7 +267,7 @@ public class WaveProgressView extends View {
         canvas.drawText(content, getWidth() / 2 - rect.width() / 2, getHeight() / 2 - numHeight, textPaint);
 
         textPaint.setTextSize(55);
-        content = "共" + (float)totalNum / 1024 + "GB";
+        content = "共" + (float) totalNum / 1024 + "GB";
         textPaint.getTextBounds(content, 0, content.length(), rect);
         canvas.drawText(content, getWidth() / 2 - rect.width() / 2, getHeight() / 2 + numHeight + dp2px(getContext(), 25), textPaint);
     }
