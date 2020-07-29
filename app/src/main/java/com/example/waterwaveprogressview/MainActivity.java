@@ -10,7 +10,5 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        WaveProgressView waveProgressView = findViewById(R.id.waveview);
-        waveProgressView.setValue(634, 1000);
     }
 }

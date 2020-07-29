@@ -10,6 +10,7 @@ import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -31,15 +32,18 @@ public class WaveProgressView extends View {
      * 圆环paint
      */
     private Paint circlePaint;
+    /** 圆环paint */
+    private Paint ringPaint;
     /**
      * 文本paint
      */
     private Paint textPaint;
     private Path wavePath;
     private int waveWidth;
-    private int waveHeight;
+    /** 波浪幅度 */
+    private float waveHeight;
     /** 水面波浪数，在为偶数的情况下，波浪才会按周期平移 */
-    private final int waveCount = 4;
+    private final int waveCount = 2;
     /** 当前数值 */
     private int curNum;
     /** 总数值 */
@@ -55,6 +59,7 @@ public class WaveProgressView extends View {
     /** 缓存bitmap */
     private Bitmap bitmap;
     private Canvas bitmapCanvas;
+    private int ringWidth;
     /**
      * 当前量
      */
@@ -81,13 +86,20 @@ public class WaveProgressView extends View {
         circlePaint.setAntiAlias(true);
         circlePaint.setColor(getResources().getColor(R.color.green));
 
+        ringPaint = new Paint();
+        ringPaint.setAntiAlias(true);
+        ringPaint.setColor(getResources().getColor(R.color.deep_green));
+        ringPaint.setStyle(Paint.Style.STROKE);
+        ringWidth = dp2px(getContext(), 12);
+        ringPaint.setStrokeWidth(ringWidth);
+
         textPaint = new Paint();
         textPaint.setColor(getResources().getColor(R.color.white));
         textPaint.setAntiAlias(true);
 
         wavePath = new Path();
 
-        runWithAnimation(872);
+        setValue(634, 1024);  //设置当前流量和总流量
     }
 
     @Override
@@ -95,7 +107,7 @@ public class WaveProgressView extends View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         waveWidth = getMeasuredWidth()/waveCount;
-        waveHeight = dp2px(getContext(), 15);
+        waveHeight = dp2px(getContext(), 18);
         rectSize = getMeasuredWidth();
         moveDistance = rectSize;
 
@@ -107,6 +119,9 @@ public class WaveProgressView extends View {
         super.onDraw(canvas);
 
         drawBitmap(canvas);
+
+        RectF rectF = new RectF(ringWidth/2, ringWidth/2, rectSize-ringWidth/2, rectSize-ringWidth/2);
+        canvas.drawArc(rectF, 0, 360, false, ringPaint);
 
         drawContentText(canvas);
     }
@@ -135,7 +150,7 @@ public class WaveProgressView extends View {
     private void drawBitmap(Canvas canvas) {
         bitmap = Bitmap.createBitmap(rectSize, rectSize, Bitmap.Config.ARGB_8888);
         bitmapCanvas = new Canvas(bitmap);
-        bitmapCanvas.drawCircle(rectSize/2, rectSize/2, rectSize/2, circlePaint);
+        bitmapCanvas.drawCircle(rectSize/2, rectSize/2, rectSize/2-ringWidth, circlePaint);
         bitmapCanvas.drawPath(setWavePath(), wavePaint);
 
         canvas.drawBitmap(bitmap, 0, 0, null);
@@ -151,6 +166,8 @@ public class WaveProgressView extends View {
         setProgressAnim(curNum);
 
         setWaveMoveAnim();
+
+        runWithAnimation(curNum);
     }
 
     /**
@@ -192,6 +209,25 @@ public class WaveProgressView extends View {
     }
 
     /**
+     * 设置文字滚动动画
+     *
+     * @param number
+     */
+    public void runWithAnimation(int number) {
+        ObjectAnimator objectAnimator = ObjectAnimator.ofInt(this, "num", 0, number);
+        objectAnimator.setDuration(1000);
+        objectAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+        objectAnimator.start();
+
+        objectAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                postInvalidate();
+            }
+        });
+    }
+
+    /**
      * 绘制圆内文字以及设置到准确位置
      */
     private void drawContentText(Canvas canvas) {
@@ -210,28 +246,9 @@ public class WaveProgressView extends View {
         canvas.drawText(content, getWidth() / 2 - rect.width() / 2, getHeight() / 2 - numHeight, textPaint);
 
         textPaint.setTextSize(55);
-        content = "共" + totalNum / 1000 + "GB";
+        content = "共" + (float)totalNum / 1024 + "GB";
         textPaint.getTextBounds(content, 0, content.length(), rect);
         canvas.drawText(content, getWidth() / 2 - rect.width() / 2, getHeight() / 2 + numHeight + dp2px(getContext(), 25), textPaint);
-    }
-
-    /**
-     * 设置文字滚动动画
-     *
-     * @param number
-     */
-    public void runWithAnimation(int number) {
-        ObjectAnimator objectAnimator = ObjectAnimator.ofInt(this, "num", 0, number);
-        objectAnimator.setDuration(1000);
-        objectAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
-        objectAnimator.start();
-
-        objectAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                postInvalidate();
-            }
-        });
     }
 
     public int getNum() {
